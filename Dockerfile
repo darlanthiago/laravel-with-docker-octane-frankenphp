@@ -7,12 +7,20 @@ RUN install-php-extensions \
 
 COPY . /app
 
-RUN curl -sS https://getcomposer.org/installer | php -- \
-	--install-dir=/usr/bin --filename=composer
+# Install composer
+COPY --from=composer/composer:2 /usr/bin/composer /usr/local/bin/composer
+
+RUN composer install --prefer-dist --no-scripts --no-dev --no-autoloader
+
+RUN composer dump-autoload --no-interaction --no-dev --optimize
+
 
 RUN chmod -R 775 storage
 RUN chmod -R 775 bootstrap
 
+
 CMD php artisan migrate
+
+EXPOSE 80
 
 ENTRYPOINT ["php", "artisan", "octane:frankenphp"]
